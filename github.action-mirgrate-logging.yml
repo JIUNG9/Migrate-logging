@@ -1,0 +1,39 @@
+name: Migrate Logging to Logback
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'pom.xml'
+
+jobs:
+  migrate-logging:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install xmlstarlet
+        run: sudo apt-get update && sudo apt-get install -y xmlstarlet
+
+      - name: Run migration script
+        run: |
+          chmod +x ./scripts/migrate-logging.sh
+          ./scripts/migrate-logging.sh
+
+      - name: Verify with Maven
+        run: mvn clean verify
+
+      - name: Push changes (if any)
+        run: |
+          if git diff --quiet; then
+            echo "✅ No changes to commit."
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add pom.xml
+            git commit -m "chore(logging): auto-migrate to logback"
+            git push origin HEAD
+          fi

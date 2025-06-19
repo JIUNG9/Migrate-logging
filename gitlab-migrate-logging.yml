@@ -1,0 +1,11 @@
+migrate_logging:
+  stage: migrate
+  image: maven:3.9.4-eclipse-temurin-17
+  script:
+    - apt-get update && apt-get install -y xmlstarlet
+    - chmod +x ./scripts/migrate-logging.sh
+    - ./scripts/migrate-logging.sh
+    - mvn clean verify
+  only:
+    changes:
+      - pom.xml
